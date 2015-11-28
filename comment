@@ -1,14 +1,4 @@
-(* dir 
-  dir2 
-    test.ml
-    test.ml
-
-Collect dirs  all files
-
-file ext 
-ext should detarmans the language
-for ex: 
-
+(*
 .h for header
 .c for c lang
 .cpp for c++
@@ -17,9 +7,4 @@ for ex:
 .blade for Blade
 .d for d lang
 
-count each line
-
-log most changed files
 *)
-
-(* entry point *)
