@@ -1,3 +1,8 @@
+(* Helper Methods *)
+let print = Printf.printf
+let loga = Array.iter (print "%s\n") 
+let logl = List.iter (print "%s\n")
+
 module Fs = struct
 
     let is_dir name = try match Sys.is_directory name with
@@ -66,17 +71,45 @@ module Fs = struct
         | _ -> 0
 end
 
-(* Helper Methods *)
-let print = Printf.printf
-let loga = Array.iter (print "%s\n") 
-let logl = List.iter (print "%s\n")
+(* TODO: store values in unique map *)
+module Stats = struct
+    let has search_for from = 
+        try 
+            List.find (fun v -> v = search_for) from;
+           true
+        with
+        | Not_found  -> false
 
-let init start_dir  =
+    let tbl_keys tbl = 
+        let keys = ref [] in
+        Hashtbl.iter (fun index _ -> 
+            if has index !keys then ()
+            else keys := index :: !keys
+        ) tbl;
+        !keys
+
+    let store ls = 
+        let storage = Hashtbl.create 10 in 
+        ls |> List.iter (fun f -> 
+            let ext = Fs.ext f in
+            Hashtbl.add storage ext (Fs.count_lines f)
+        );
+        storage
+
+    let log tbl =
+        let rec count c v = match c with 
+        | [] -> v
+        | h :: t -> count t (v+h) in 
+        tbl_keys tbl |> List.iter (fun k -> 
+            Printf.printf "%s: %d\n" k @@ count (Hashtbl.find_all tbl k) 0
+        ) 
+end
+
+
+let init start_dir  = 
     Fs.walk start_dir (ref []) 
-    |> List.iter (fun f -> 
-        let ext = Fs.ext f in
-        print "count: %s\n" ext
-    )
+    |> Stats.store
+    |> Stats.log
 
 
 (* TODO: Parse dir name *)
