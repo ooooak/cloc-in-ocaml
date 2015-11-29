@@ -3,7 +3,6 @@ let print = Printf.printf
 let loga = Array.iter (print "%s\n") 
 let logl = List.iter (print "%s\n")
 
-let print = Printf.printf
 
 let is_dir name = try match Sys.is_directory name with
     | true -> `True
@@ -15,7 +14,6 @@ let is_file path = match is_dir path with
     | `False -> `True
     | `True -> `False
     | `Not_Exists -> `Not_Exists
-
 
 (* should i just return list then append it ? *)
 (* this function can be improved              *)
@@ -51,8 +49,19 @@ let count_nl path = match is_file path with
     | _ -> 0
     
 
-let main = 
-    scan_files "test" (ref []) |> List.iter (fun f -> 
+let init start_dir  =
+    scan_files start_dir (ref []) |> List.iter (fun f -> 
         let c = count_nl f in
         print "count: %d\n" c
     )
+
+
+(* TODO: Parse dir name *)
+let main =
+    match Array.length Sys.argv with
+    | 0 | 1 -> print "Error: Dir name is missing.\n"
+    | _ -> 
+        let dir_name = Sys.argv.(1) in 
+        match is_dir dir_name with
+        | `True -> init dir_name
+        | _ -> print "Error: Invalid directory name.\n"
