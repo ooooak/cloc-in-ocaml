@@ -8,13 +8,13 @@ module Fs = struct
 
     let is_file path = match is_dir path with
         | `False -> `True
-        | `True -> `False
+        | `True  -> `False
         | `Not_Exists -> `Not_Exists
 
 
     (* wall fail on utf8 *)
     let to_str = Char.escaped
-    
+
     let rec ext path = 
         let rec ext' path output len = 
             if len = 0 then ""
@@ -26,15 +26,25 @@ module Fs = struct
         ext' path "" @@ String.length path - 1
 
 
+    let lang_ext = function 
+        | "hs"  | "ml"   | "rs" | "go"  | "d"   | "c" 
+        | "cpp" | "java" | "h"  | "php" | "js"  | "py" 
+        | "rb"  | "lua"  | "r"  | "rkt" | "clj" | "coffee"   
+            -> true
+        | _ -> false
+
     (* should i just return list then append it ? 
-       TDO: can be improved, can we use rec node *)
+       TDO: can we use tree or list ? *)
     let rec walk start storage = match start with
         | "" -> !storage
         | _ -> start |> Sys.readdir |> Array.iter (fun f -> 
             let current = Filename.concat start f in 
                 match is_dir current  with
                 | `True -> let _ = walk current storage in ()
-                | `False -> storage := current :: !storage; ()
+                | `False -> 
+                    if lang_ext (ext current) then
+                        storage := current :: !storage
+                    else ()
                 | `Not_Exists -> ()
         );
         !storage
