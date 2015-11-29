@@ -101,7 +101,7 @@ module Stats = struct
         | [] -> v
         | h :: t -> count t (v+h) in 
         tbl_keys tbl |> List.iter (fun k -> 
-            Printf.printf "%s: %d\n" k @@ count (Hashtbl.find_all tbl k) 0
+            print "%s: %d\n" k @@ count (Hashtbl.find_all tbl k) 0
         ) 
 end
 
