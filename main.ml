@@ -106,18 +106,15 @@ module Stats = struct
 end
 
 
-let init start_dir  = 
-    Fs.walk start_dir (ref []) 
-    |> Stats.store
-    |> Stats.log
+let init start_dir  = match Fs.is_dir start_dir with
+    | `True -> ref [] 
+        |> Fs.walk start_dir 
+        |> Stats.store
+        |> Stats.log
+    | _ -> print "Error: Invalid directory name.\n"
 
 
 (* TODO: Parse dir name *)
-let main =
-    match Array.length Sys.argv with
-    | 0 | 1 -> print "Error: Dir name is missing.\n"
-    | _ -> 
-        let dir_name = Sys.argv.(1) in 
-        match Fs.is_dir dir_name with
-        | `True -> init dir_name
-        | _ -> print "Error: Invalid directory name.\n"
+let main = match Sys.argv |> Array.to_list with 
+    | [_; path] -> init path
+    | _ -> print "Error: Dir name is missing.\n"
