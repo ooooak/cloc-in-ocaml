@@ -1,7 +1,5 @@
 (* Helper Methods *)
 let print = Printf.printf
-let loga = Array.iter (print "%s\n") 
-let logl = List.iter (print "%s\n")
 
 module Fs = struct
 
@@ -15,7 +13,6 @@ module Fs = struct
         | `False -> `True
         | `True  -> `False
         | `Not_Exists -> `Not_Exists
-
 
     (* wall fail on utf8 *)
     let to_str = Char.escaped
@@ -48,7 +45,7 @@ module Fs = struct
                 match is_dir current  with
                 | `True -> let _ = walk current storage in ()
                 | `False -> 
-                    if lang_ext (ext current) then
+                    if ext current |> lang_ext then
                         storage := current :: !storage
                 | `Not_Exists -> ()
         );
@@ -65,7 +62,7 @@ module Fs = struct
                         count := !count + 1
                     done 
                 with 
-                | _ -> close_in in_channel
+                    _ -> close_in in_channel
             end; 
             !count
         | _ -> 0
@@ -80,7 +77,7 @@ module Stats = struct
         with
         | Not_found  -> false
 
-    let tbl_keys tbl = 
+    let get_keys tbl = 
         let keys = ref [] in
         Hashtbl.iter (fun index _ -> 
             if has index !keys == false then
@@ -96,27 +93,34 @@ module Stats = struct
         );
         storage
 
-    let log tbl =
-        let rec count c v = match c with 
+    let count c = 
+        let rec count' c v = match c with 
         | [] -> v
-        | h :: t -> count t (v+h) in 
-        tbl_keys tbl |> List.iter (fun k -> 
-            let c = count (Hashtbl.find_all tbl k) 0 in 
-            if c > 0 then 
-                print "%s: %d\n" k c
+        | h :: t -> count' t (v + h)
+    in count' c 0
+
+    let log tbl = 
+        get_keys tbl 
+        |> List.iter (fun key -> 
+            let len = Hashtbl.find_all tbl key |> count in 
+            if len > 0 then print "%s: %d\n" key len
         ) 
 end
 
 
 let init start_dir  = match Fs.is_dir start_dir with
-    | `True -> ref [] 
+    | `True -> 
+        ref [] 
         |> Fs.walk start_dir 
         |> Stats.store
         |> Stats.log
-    | _ -> print "Error: Invalid directory name.\n"
+    | _ -> 
+        print "Error: Invalid directory name.\n"
 
 
 (* TODO: Parse dir name *)
 let main = match Sys.argv |> Array.to_list with 
-    | [_; path] -> init path
-    | _ -> print "Error: Wrong Numbers of Arguments.\n"
+    | [_; path] -> 
+        init path
+    | _ -> 
+        print "Error: Wrong Numbers of Arguments.\n"
