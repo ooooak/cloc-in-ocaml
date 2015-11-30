@@ -22,7 +22,8 @@ module Fs = struct
 
     let rec ext path = 
         let rec ext' path output len = 
-            if len = 0 then ""
+            if len = 0 then 
+                ""
             else 
                 match String.get path len with
                 | '.' -> output
@@ -49,7 +50,6 @@ module Fs = struct
                 | `False -> 
                     if lang_ext (ext current) then
                         storage := current :: !storage
-                    else ()
                 | `Not_Exists -> ()
         );
         !storage
@@ -83,8 +83,8 @@ module Stats = struct
     let tbl_keys tbl = 
         let keys = ref [] in
         Hashtbl.iter (fun index _ -> 
-            if has index !keys then ()
-            else keys := index :: !keys
+            if has index !keys == false then
+                keys := index :: !keys
         ) tbl;
         !keys
 
@@ -101,7 +101,9 @@ module Stats = struct
         | [] -> v
         | h :: t -> count t (v+h) in 
         tbl_keys tbl |> List.iter (fun k -> 
-            print "%s: %d\n" k @@ count (Hashtbl.find_all tbl k) 0
+            let c = count (Hashtbl.find_all tbl k) 0 in 
+            if c > 0 then 
+                print "%s: %d\n" k c
         ) 
 end
 
@@ -117,4 +119,4 @@ let init start_dir  = match Fs.is_dir start_dir with
 (* TODO: Parse dir name *)
 let main = match Sys.argv |> Array.to_list with 
     | [_; path] -> init path
-    | _ -> print "Error: Dir name is missing.\n"
+    | _ -> print "Error: Wrong Numbers of Arguments.\n"
