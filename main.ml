@@ -39,15 +39,21 @@ module Fs = struct
     (* should i just return list then append it ? 
        TDO: can we use tree or list ? *)
     let rec walk start storage = match start with
-        | "" -> !storage
-        | _ -> start |> Sys.readdir |> Array.iter (fun f -> 
+        | "" -> 
+          !storage
+        | _ -> 
+          start
+          |> Sys.readdir 
+          |> Array.iter (fun f -> 
             let current = Filename.concat start f in 
                 match is_dir current  with
-                | `True -> let _ = walk current storage in ()
+                | `True -> 
+                  let _ = walk current storage in ()
                 | `False -> 
-                    if ext current |> lang_ext then
-                        storage := current :: !storage
-                | `Not_Exists -> ()
+                  if ext current |> lang_ext then
+                    storage := current :: !storage
+                | `Not_Exists -> 
+                  ()
         );
         !storage
 
@@ -118,9 +124,21 @@ let init start_dir  = match Fs.is_dir start_dir with
         print "Error: Invalid directory name.\n"
 
 
+let chop_trailing_slash str = 
+  let len = String.length str in
+  if len = 0 then
+    str
+  else
+    let char = str.[len - 1] in
+    if char = '/' || char = '\\' then
+      String.sub str 0 (len - 1)
+    else
+      str
+
+
 (* TODO: Parse dir name *)
-let main = match Sys.argv |> Array.to_list with 
-    | [_; path] -> 
-        init path
+let main = match Sys.argv with 
+    | [| _; path |] -> 
+        init (chop_trailing_slash path)
     | _ -> 
         print "Error: Wrong Numbers of Arguments.\n"
